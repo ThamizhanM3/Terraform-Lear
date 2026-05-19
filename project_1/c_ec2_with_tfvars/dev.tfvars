@@ -1,0 +1,5 @@
+aws_region    = "ap-south-1"
+instance_type = "t2.micro"
+ami_id        = "ami-07a00cf47dbbc844c"
+instance_name = "instance_003"
+environment   = "development"
