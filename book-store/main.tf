@@ -324,7 +324,7 @@ resource "aws_lb" "bookstore_frontend_applicationloadbalancer" {
     name = "BookStoreFrontendALB"
     internal = false 
     load_balancer_type = "application"
-    security_groups = [ aws_security_group.bookstore_backend_applicationloadbalancer_securitygroup.id ]
+    security_groups = [ aws_security_group.bookstore_frontend_applicationloadbalancer_securitygroup.id ]
     subnets = [ aws_subnet.bookstore_bastionhost_public_subnet_a.id, aws_subnet.bookstore_bastionhost_public_subnet_b.id ]
     tags = {
         Name = "BookkStore_Frontend_ApplicationLoadBalancer"
@@ -340,9 +340,9 @@ resource "aws_lb_target_group" "bookstore_frontend_targetgroup" {
         path = "/"
         protocol = "HTTP"
         matcher = "200-399"
-        interval = 5
-        timeout = 2
-        unhealthy_threshold = 2
+        interval = 10
+        timeout = 5
+        unhealthy_threshold = 5
         healthy_threshold = 2
     }
     tags = {
@@ -398,6 +398,7 @@ resource "aws_instance" "bookstore_bastionhost_instance" {
     subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a.id
     security_groups = [ aws_security_group.bookstore_bastionhost_securitygroup.id ]
     associate_public_ip_address = true 
+    key_name = "M3"
     tags = {
         Name = "BookStore_BastionHost_Instance"
     }
