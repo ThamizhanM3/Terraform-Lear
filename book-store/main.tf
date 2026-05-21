@@ -3,7 +3,7 @@ resource "aws_vpc" "bookstore_vpc" {
     enable_dns_hostnames = true 
     enable_dns_support = true 
     tags = {
-        Nmae = "BookStore_VPC"
+        Name = "BookStore_VPC"
     }
 }
 
@@ -90,7 +90,7 @@ resource "aws_internet_gateway" "bookstore_internetgateway" {
 
 resource "aws_route_table" "bookstore_public_routetable" {
     vpc_id = aws_vpc.bookstore_vpc.id
-    route = {
+    route {
         cidr_block = "0.0.0.0/0"
         gateway_id = aws_internet_gateway.bookstore_internetgateway.id
     }
@@ -100,25 +100,25 @@ resource "aws_route_table" "bookstore_public_routetable" {
 }
 
 resource "aws_route_table_association" "bookstore_bastionhost_public_subnet_a_association" {
-    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a.id
     route_table_id = aws_route_table.bookstore_public_routetable.id
 }
 
 resource "aws_route_table_association" "bookstore_bastionhost_public_subnet_b_association" {
-    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_b
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_b.id
     route_table_id = aws_route_table.bookstore_public_routetable.id
 }
 
 resource "aws_eip" "bookstore_natgateway_eip" {
-    domain = vpc 
+    domain = "vpc"
     tags = {
         Name = "BookStore_NATGateway_ElasticIP"
     }
 }
 
 resource "aws_nat_gateway" "bookstore_natgateway" {
-    allocation_id = aws_eip.bookstore_natgateway_eip
-    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a
+    allocation_id = aws_eip.bookstore_natgateway_eip.id
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a.id
     tags = {
         Name = "BookStore_NATGateway"
     }
@@ -127,7 +127,7 @@ resource "aws_nat_gateway" "bookstore_natgateway" {
 
 resource "aws_route_table" "bookstore_frontend_private_routetable" {
     vpc_id = aws_vpc.bookstore_vpc.id
-    route = {
+    route {
         cidr_block = "0.0.0.0/0"
         nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id
     }
@@ -137,8 +137,8 @@ resource "aws_route_table" "bookstore_frontend_private_routetable" {
 }
 
 resource "aws_route_table_association" "bookstore_frontend_private_subnet_a_association" {
-    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a
-    route_table_id = aws_route_table.bookstore_frontend_private_routetable
+    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a.id
+    route_table_id = aws_route_table.bookstore_frontend_private_routetable.id
 }
 
 resource "aws_route_table_association" "bookstore_frontend_private_subnet_b_association" {
@@ -148,7 +148,7 @@ resource "aws_route_table_association" "bookstore_frontend_private_subnet_b_asso
 
 resource "aws_route_table" "bookstore_backend_private_routetable" {
     vpc_id = aws_vpc.bookstore_vpc.id
-    route = {
+    route {
         cidr_block = "0.0.0.0/0"
         nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id
     }
@@ -163,13 +163,13 @@ resource "aws_route_table_association" "bookstore_backend_private_subnet_a_assoc
 }
 
 resource "aws_route_table_association" "bookstore_backend_private_subnet_b_association" {
-    subnet_id = aws_subnet.bookstore_backend_private_subnet_b
+    subnet_id = aws_subnet.bookstore_backend_private_subnet_b.id
     route_table_id = aws_route_table.bookstore_backend_private_routetable.id
 }
 
 resource "aws_route_table" "bookstore_database_private_routetable" {
     vpc_id = aws_vpc.bookstore_vpc.id
-    route = {
+    route {
         cidr_block = "0.0.0.0/0"
         nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id 
     }
@@ -321,18 +321,18 @@ resource "aws_security_group" "bookstore_database_securitygroup" {
 }
 
 resource "aws_lb" "bookstore_frontend_applicationloadbalancer" {
-    name = "bookstore_frontend_alb"
+    name = "BookStoreFrontendALB"
     internal = false 
     load_balancer_type = "application"
     security_groups = [ aws_security_group.bookstore_backend_applicationloadbalancer_securitygroup.id ]
-    subnets = [ aws_subnet.bookstore_bastionhost_public_subnet_a, aws_subnet.bookstore_bastionhost_public_subnet_b ]
+    subnets = [ aws_subnet.bookstore_bastionhost_public_subnet_a.id, aws_subnet.bookstore_bastionhost_public_subnet_b.id ]
     tags = {
         Name = "BookkStore_Frontend_ApplicationLoadBalancer"
     }
 }
 
 resource "aws_lb_target_group" "bookstore_frontend_targetgroup" {
-    name = "bookstore_frontend_tg"
+    name = "BookStoreFrontendTG"
     port = 80
     protocol = "HTTP"
     vpc_id = aws_vpc.bookstore_vpc.id
@@ -369,8 +369,24 @@ resource "aws_lb_listener" "bookstore_frontend_listener" {
 resource "aws_instance" "bookstore_frontend_instance" {
     ami = "ami-07a00cf47dbbc844c"
     instance_type = "t2.micro"
-    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a
+    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a.id
     security_groups = [ aws_security_group.bookstore_frontend_securitygroup.id ]
+    key_name = "M3"
+    user_data = <<-EOF
+              #!/bin/bash
+
+              apt update -y
+              apt install -y docker.io
+
+              systemctl start docker
+              systemctl enable docker
+
+              docker run -d \
+                --name bookstore-frontend \
+                -p 80:80 \
+                -e VITE_APP_API_URL=http://localhost:5555 \
+                thamizhanm3/book-store-frontend:latest
+              EOF
     tags = {
         Name = "BookStore_Frontend_Instance"
     }
