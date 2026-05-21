@@ -300,8 +300,8 @@ resource "aws_security_group" "bookstore_database_securitygroup" {
     vpc_id = aws_vpc.bookstore_vpc.id
     ingress {
         description = "HTTP"
-        from_port = 80
-        to_port = 80
+        from_port = 27017
+        to_port = 27017
         protocol = "tcp"
         security_groups = [ aws_security_group.bookstore_backend_securitygroup.id ]
     }
@@ -384,7 +384,7 @@ resource "aws_instance" "bookstore_frontend_instance" {
               docker run -d \
                 --name bookstore-frontend \
                 -p 80:80 \
-                -e VITE_APP_API_URL=http://localhost:5555 \
+                -e VITE_APP_API_URL="http://${aws_lb.bookstore_backend_applicationloadbalancer.dns_name}" \
                 thamizhanm3/book-store-frontend:latest
               EOF
     tags = {
@@ -401,5 +401,104 @@ resource "aws_instance" "bookstore_bastionhost_instance" {
     key_name = "M3"
     tags = {
         Name = "BookStore_BastionHost_Instance"
+    }
+}
+
+resource "aws_lb" "bookstore_backend_applicationloadbalancer" {
+    name = "BookStoreBackendALB"
+    internal = true
+    load_balancer_type = "application"
+    security_groups = [ aws_security_group.bookstore_backend_applicationloadbalancer_securitygroup.id ]
+    subnets = [ aws_subnet.bookstore_backend_private_subnet_a.id, aws_subnet.bookstore_backend_private_subnet_b.id ]
+    tags = {
+        Name = "BookkStore_Backend_ApplicationLoadBalancer"
+    }
+}
+
+resource "aws_lb_target_group" "bookstore_backend_targetgroup" {
+    name = "BookStoreBackendTG"
+    port = 80
+    protocol = "HTTP"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    health_check {
+        path = "/"
+        protocol = "HTTP"
+        matcher = "200-399"
+        interval = 10
+        timeout = 5
+        unhealthy_threshold = 5
+        healthy_threshold = 2
+    }
+    tags = {
+        Name = "BookStore_Backend_TargetGroup"
+    }
+}
+
+resource "aws_lb_target_group_attachment" "bookstore_backendend_targetgroup_attachment" {
+    target_group_arn = aws_lb_target_group.bookstore_backend_targetgroup.arn
+    target_id = aws_instance.bookstore_backend_instance.id
+    port = 80
+}
+
+resource "aws_lb_listener" "bookstore_backend_listener" {
+    load_balancer_arn = aws_lb.bookstore_backend_applicationloadbalancer.arn
+    port = 80
+    protocol = "HTTP"
+    default_action {
+        type = "forward"
+        target_group_arn = aws_lb_target_group.bookstore_backend_targetgroup.arn
+    }
+}
+
+resource "aws_instance" "bookstore_backend_instance" {
+    ami = "ami-07a00cf47dbbc844c"
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.bookstore_backend_private_subnet_a.id
+    security_groups = [ aws_security_group.bookstore_backend_securitygroup.id ]
+    key_name = "M3"
+    user_data = <<-EOF
+              #!/bin/bash
+
+              apt update -y
+              apt install -y docker.io
+
+              systemctl start docker
+              systemctl enable docker
+
+              docker run -d \
+                --name bookstore-backend \
+                -p 80:5555 \
+                -e PORT=5555 \
+                -e MONGO_URI="mongodb://${aws_instance.bookstore_database_instance.private_ip}:27017/bookstore" \
+                thamizhanm3/book-store-backend:latest
+              EOF
+    tags = {
+        Name = "BookStore_Backend_Instance"
+    }
+}
+
+resource "aws_instance" "bookstore_database_instance" {
+    ami = "ami-07a00cf47dbbc844c"
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.bookstore_database_private_subnet_a.id
+    security_groups = [ aws_security_group.bookstore_database_securitygroup.id ]
+    key_name = "M3"
+    user_data = <<-EOF
+              #!/bin/bash
+
+              apt update -y
+              apt install -y docker.io
+
+              systemctl start docker
+              systemctl enable docker
+
+              docker run -d \
+                --name mongodb \
+                --restart unless-stopped \
+                -p 27017:27017 \
+                mongo
+              EOF
+    tags = {
+        Name = "BookStore_Database_Instance"
     }
 }
