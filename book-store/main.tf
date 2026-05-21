@@ -1,0 +1,388 @@
+resource "aws_vpc" "bookstore_vpc" {
+    cidr_block = var.bookstore_vpc_cidr
+    enable_dns_hostnames = true 
+    enable_dns_support = true 
+    tags = {
+        Nmae = "BookStore_VPC"
+    }
+}
+
+resource "aws_subnet" "bookstore_bastionhost_public_subnet_a" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_bastionhost_public_subnet_a_cidr
+    availability_zone = var.availability_zone_a
+    map_public_ip_on_launch = true
+    tags = {
+        Name = "Bookstore_BastionHost_PublicSubnetA"
+    }
+}
+
+resource "aws_subnet" "bookstore_bastionhost_public_subnet_b" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_bastionhost_public_subnet_b_cidr
+    availability_zone = var.availability_zone_b
+    map_public_ip_on_launch = true
+    tags = {
+        Name = "Bookstore_BastionHost_PublicSubnet_B"
+    }
+}
+
+resource "aws_subnet" "bookstore_frontend_private_subnet_a" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_frontend_private_subnet_a_cidr
+    availability_zone = var.availability_zone_a
+    tags = {
+        Name = "BookStore_Frontend_PrivateSubnet_A"
+    }
+}
+
+resource "aws_subnet" "bookstore_frontend_private_subnet_b" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_frontend_private_subnet_b_cidr
+    availability_zone = var.availability_zone_b
+    tags = {
+        Name = "BookStore_Frontend_PrivateSubnet_B"
+    }
+}
+
+resource "aws_subnet" "bookstore_backend_private_subnet_a" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_backend_private_subnet_a_cidr
+    availability_zone = var.availability_zone_a
+    tags = {
+        Name = "BookStore_Backend_PrivateSubnet_A"
+    }
+}
+
+resource "aws_subnet" "bookstore_backend_private_subnet_b" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_backend_private_subnet_b_cidr
+    availability_zone = var.availability_zone_b
+    tags = {
+        Name = "BookStore_Backend_PrivateSubnet_B"
+    }
+}
+
+resource "aws_subnet" "bookstore_database_private_subnet_a" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_database_private_subnet_a_cidr
+    availability_zone = var.availability_zone_a
+    tags = {
+        Name = "BookStore_Database_PrivateSubnet_A"
+    }
+}
+
+resource "aws_subnet" "bookstore_database_private_subnet_b" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    cidr_block = var.bookstore_database_private_subnet_b_cidr
+    availability_zone = var.availability_zone_b
+    tags = {
+        Name = "BookStore_Database_PrivateSubnet_B"
+    }
+}
+
+resource "aws_internet_gateway" "bookstore_internetgateway" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    tags = {
+        Name = "BookStore_InternetGateway"
+    }
+}
+
+resource "aws_route_table" "bookstore_public_routetable" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    route = {
+        cidr_block = "0.0.0.0/0"
+        gateway_id = aws_internet_gateway.bookstore_internetgateway.id
+    }
+    tags = {
+        Name = "BookStore_Public_RouteTable"
+    }
+}
+
+resource "aws_route_table_association" "bookstore_bastionhost_public_subnet_a_association" {
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a
+    route_table_id = aws_route_table.bookstore_public_routetable.id
+}
+
+resource "aws_route_table_association" "bookstore_bastionhost_public_subnet_b_association" {
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_b
+    route_table_id = aws_route_table.bookstore_public_routetable.id
+}
+
+resource "aws_eip" "bookstore_natgateway_eip" {
+    domain = vpc 
+    tags = {
+        Name = "BookStore_NATGateway_ElasticIP"
+    }
+}
+
+resource "aws_nat_gateway" "bookstore_natgateway" {
+    allocation_id = aws_eip.bookstore_natgateway_eip
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a
+    tags = {
+        Name = "BookStore_NATGateway"
+    }
+    depends_on = [ aws_internet_gateway.bookstore_internetgateway ]
+}
+
+resource "aws_route_table" "bookstore_frontend_private_routetable" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    route = {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id
+    }
+    tags = {
+        Name = "BookStore_Frontend_Private_RouteTable"
+    }
+}
+
+resource "aws_route_table_association" "bookstore_frontend_private_subnet_a_association" {
+    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a
+    route_table_id = aws_route_table.bookstore_frontend_private_routetable
+}
+
+resource "aws_route_table_association" "bookstore_frontend_private_subnet_b_association" {
+    subnet_id = aws_subnet.bookstore_frontend_private_subnet_b.id
+    route_table_id = aws_route_table.bookstore_frontend_private_routetable.id
+}
+
+resource "aws_route_table" "bookstore_backend_private_routetable" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    route = {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id
+    }
+    tags = {
+        Name = "BookStore_Backend_Private_RouteTable"
+    }
+}
+
+resource "aws_route_table_association" "bookstore_backend_private_subnet_a_association" {
+    subnet_id = aws_subnet.bookstore_backend_private_subnet_a.id
+    route_table_id = aws_route_table.bookstore_backend_private_routetable.id
+}
+
+resource "aws_route_table_association" "bookstore_backend_private_subnet_b_association" {
+    subnet_id = aws_subnet.bookstore_backend_private_subnet_b
+    route_table_id = aws_route_table.bookstore_backend_private_routetable.id
+}
+
+resource "aws_route_table" "bookstore_database_private_routetable" {
+    vpc_id = aws_vpc.bookstore_vpc.id
+    route = {
+        cidr_block = "0.0.0.0/0"
+        nat_gateway_id = aws_nat_gateway.bookstore_natgateway.id 
+    }
+}
+
+resource "aws_route_table_association" "bookstore_database_private_subnet_a_association" {
+    subnet_id = aws_subnet.bookstore_database_private_subnet_a.id 
+    route_table_id = aws_route_table.bookstore_database_private_routetable.id
+}
+
+resource "aws_route_table_association" "bookstore_database_private_subnet_b_association" {
+    subnet_id = aws_subnet.bookstore_database_private_subnet_b.id
+    route_table_id = aws_route_table.bookstore_database_private_routetable.id
+}
+
+resource "aws_security_group" "bookstore_bastionhost_securitygroup" {
+    name = "BookStore_BH_SG"
+    description = "BookStore_BH_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "SSH"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "bookstore_frontend_applicationloadbalancer_securitygroup" {
+    name = "BookStore_Frontend_ALB_SG"
+    description = "BookStore_Frontend_ALB_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "HTTP"
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "bookstore_frontend_securitygroup" {
+    name = "BookStore_Frontend_SG"
+    description = "BookStore_Frontend_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "HTTP"
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [aws_security_group.bookstore_frontend_applicationloadbalancer_securitygroup.id]
+    }
+    ingress {
+        description = "SSH"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        security_groups = [aws_security_group.bookstore_bastionhost_securitygroup.id]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "bookstore_backend_applicationloadbalancer_securitygroup" {
+    name = "BookStore_Backend_ALB_SG"
+    description = "BookStore_Backend_ALB_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "HTTP"
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [ aws_security_group.bookstore_frontend_securitygroup.id ]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "bookstore_backend_securitygroup" {
+    name = "BookStore_Backend_SG"
+    description = "BookStore_Backend_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "HTTP"
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [aws_security_group.bookstore_backend_applicationloadbalancer_securitygroup.id]
+    }
+    ingress {
+        description = "SSH"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        security_groups = [ aws_security_group.bookstore_bastionhost_securitygroup.id ]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_security_group" "bookstore_database_securitygroup" {
+    name = "BookStore_Database_SG"
+    description = "BookStore_Database_SG"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    ingress {
+        description = "HTTP"
+        from_port = 80
+        to_port = 80
+        protocol = "tcp"
+        security_groups = [ aws_security_group.bookstore_backend_securitygroup.id ]
+    }
+    ingress {
+        description = "SSH"
+        from_port = 22
+        to_port = 22
+        protocol = "tcp"
+        security_groups = [ aws_security_group.bookstore_bastionhost_securitygroup.id ]
+    }
+    egress {
+        from_port = 0
+        to_port = 0
+        protocol = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+}
+
+resource "aws_lb" "bookstore_frontend_applicationloadbalancer" {
+    name = "bookstore_frontend_alb"
+    internal = false 
+    load_balancer_type = "application"
+    security_groups = [ aws_security_group.bookstore_backend_applicationloadbalancer_securitygroup.id ]
+    subnets = [ aws_subnet.bookstore_bastionhost_public_subnet_a, aws_subnet.bookstore_bastionhost_public_subnet_b ]
+    tags = {
+        Name = "BookkStore_Frontend_ApplicationLoadBalancer"
+    }
+}
+
+resource "aws_lb_target_group" "bookstore_frontend_targetgroup" {
+    name = "bookstore_frontend_tg"
+    port = 80
+    protocol = "HTTP"
+    vpc_id = aws_vpc.bookstore_vpc.id
+    health_check {
+        path = "/"
+        protocol = "HTTP"
+        matcher = "200-399"
+        interval = 5
+        timeout = 2
+        unhealthy_threshold = 2
+        healthy_threshold = 2
+    }
+    tags = {
+        Name = "BookStore_Frontend_TargetGroup"
+    }
+}
+
+resource "aws_lb_target_group_attachment" "bookstore_frontend_targetgroup_attachment" {
+    target_group_arn = aws_lb_target_group.bookstore_frontend_targetgroup.arn
+    target_id = aws_instance.bookstore_frontend_instance.id
+    port = 80
+}
+
+resource "aws_lb_listener" "bookstore_frontend_listener" {
+    load_balancer_arn = aws_lb.bookstore_frontend_applicationloadbalancer.arn
+    port = 80
+    protocol = "HTTP"
+    default_action {
+        type = "forward"
+        target_group_arn = aws_lb_target_group.bookstore_frontend_targetgroup.arn
+    }
+}
+
+resource "aws_instance" "bookstore_frontend_instance" {
+    ami = "ami-07a00cf47dbbc844c"
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a
+    security_groups = [ aws_security_group.bookstore_frontend_securitygroup.id ]
+    tags = {
+        Name = "BookStore_Frontend_Instance"
+    }
+}
+
+resource "aws_instance" "bookstore_bastionhost_instance" {
+    ami = "ami-07a00cf47dbbc844c"
+    instance_type = "t2.micro"
+    subnet_id = aws_subnet.bookstore_bastionhost_public_subnet_a.id
+    security_groups = [ aws_security_group.bookstore_bastionhost_securitygroup.id ]
+    associate_public_ip_address = true 
+    tags = {
+        Name = "BookStore_BastionHost_Instance"
+    }
+}

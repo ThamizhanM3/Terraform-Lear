@@ -38,3 +38,12 @@ resource "aws_internet_gateway" "my_igw" {
         Name = "my_igw"
     }
 }
+
+resource "aws_security_group_rule" "rule1" {
+    type = "ingress"
+    from_port = 0
+    to_port = 65535
+    protocol = "tcp"
+    cidr_blocks = [ var.allowed_http ]
+    security_group_id = aws_security_group.my_sg.id
+}
