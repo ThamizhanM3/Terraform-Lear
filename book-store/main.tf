@@ -365,28 +365,70 @@ resource "aws_lb_listener" "bookstore_frontend_listener" {
         target_group_arn = aws_lb_target_group.bookstore_frontend_targetgroup.arn
     }
 }
-
 resource "aws_instance" "bookstore_frontend_instance" {
-    ami = "ami-07a00cf47dbbc844c"
-    instance_type = "t2.micro"
-    subnet_id = aws_subnet.bookstore_frontend_private_subnet_a.id
-    security_groups = [ aws_security_group.bookstore_frontend_securitygroup.id ]
-    key_name = "M3"
+
+    ami                    = "ami-07a00cf47dbbc844c"
+    instance_type          = "t2.micro"
+    subnet_id              = aws_subnet.bookstore_frontend_private_subnet_a.id
+    security_groups        = [aws_security_group.bookstore_frontend_securitygroup.id]
+    key_name               = "M3"
+
     user_data = <<-EOF
               #!/bin/bash
 
               apt update -y
-              apt install -y docker.io
+
+              apt install -y docker.io nginx
 
               systemctl start docker
               systemctl enable docker
 
+              systemctl start nginx
+              systemctl enable nginx
+
               docker run -d \
                 --name bookstore-frontend \
-                -p 80:80 \
-                -e VITE_APP_API_URL="http://${aws_lb.bookstore_backend_applicationloadbalancer.dns_name}" \
+                -p 3000:80 \
+                -e VITE_APP_API_URL="/api" \
                 thamizhanm3/book-store-frontend:latest
+
+              cat > /etc/nginx/sites-available/default <<'NGINXCONF'
+              server {
+
+                  listen 80;
+
+                  location / {
+
+                      proxy_pass http://localhost:3000;
+
+                      proxy_http_version 1.1;
+
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto $scheme;
+                  }
+
+                  location /api/ {
+
+                      proxy_pass http://${aws_lb.bookstore_backend_applicationloadbalancer.dns_name}/;
+
+                      proxy_http_version 1.1;
+
+                      proxy_set_header Host $host;
+                      proxy_set_header X-Real-IP $remote_addr;
+                      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                      proxy_set_header X-Forwarded-Proto $scheme;
+                  }
+              }
+              NGINXCONF
+
+              nginx -t
+
+              systemctl restart nginx
+
               EOF
+
     tags = {
         Name = "BookStore_Frontend_Instance"
     }
