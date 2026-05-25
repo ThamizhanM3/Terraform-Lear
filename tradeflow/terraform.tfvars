@@ -3,6 +3,8 @@ aws_region = "ap-south-1"
 availability_zone_a = "ap-south-1a"
 availability_zone_b = "ap-south-1b"
 
+project_name = "tradeflow"
+
 vpc_cidr = "10.0.0.0/16"
 
 bastionhost_subnet_a_cidr = "10.0.1.0/24"
