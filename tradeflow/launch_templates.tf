@@ -12,16 +12,95 @@ resource "aws_launch_template" "frontend_launch_template" {
                 #!/bin/bash
 
                 apt update -y
-                apt install -y docker.io
+
+                apt install -y docker.io nginx
 
                 systemctl start docker
                 systemctl enable docker
 
+                systemctl start nginx
+                systemctl enable nginx
+
                 docker run -d \
-                  --name frontend \
+                  --name tradeflow-frontend \
                   --restart unless-stopped \
-                  -p ${var.frontend_port}:${var.frontend_port} \
+                  -p 3000:80 \
+                  -e VITE_USERS_API="/api/users" \
+                  -e VITE_STOCKS_API="/api/stocks" \
+                  -e VITE_TRADES_API="/api/trades" \
+                  -e VITE_PORTFOLIO_API="/api/portfolio" \
                   ${var.frontend_docker_image}
+
+                cat > /etc/nginx/sites-available/default <<'NGINXCONF'
+                server {
+
+                    listen 80;
+
+                    location / {
+
+                        proxy_pass http://localhost:3000;
+
+                        proxy_http_version 1.1;
+
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+
+                    location /api/users/ {
+
+                        proxy_pass http://${aws_lb.backend_alb.dns_name};
+
+                        proxy_http_version 1.1;
+
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+
+                    location /api/stocks/ {
+
+                        proxy_pass http://${aws_lb.backend_alb.dns_name};
+
+                        proxy_http_version 1.1;
+
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+
+                    location /api/trades/ {
+
+                        proxy_pass http://${aws_lb.backend_alb.dns_name};
+
+                        proxy_http_version 1.1;
+
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+
+                    location /api/portfolio/ {
+
+                        proxy_pass http://${aws_lb.backend_alb.dns_name};
+
+                        proxy_http_version 1.1;
+
+                        proxy_set_header Host $host;
+                        proxy_set_header X-Real-IP $remote_addr;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+                }
+                NGINXCONF
+
+                nginx -t
+
+                systemctl restart nginx
                 EOF
     )
 

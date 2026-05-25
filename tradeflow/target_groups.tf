@@ -39,7 +39,7 @@ resource "aws_lb_target_group" "microservice_1_target_group" {
     health_check {
         enabled             = true
         interval            = 30
-        path                = "/"
+        path                = "/health"
         protocol            = "HTTP"
         timeout             = 5
         healthy_threshold   = 2
@@ -66,7 +66,7 @@ resource "aws_lb_target_group" "microservice_2_target_group" {
     health_check {
         enabled             = true
         interval            = 30
-        path                = "/"
+        path                = "/health"
         protocol            = "HTTP"
         timeout             = 5
         healthy_threshold   = 2
@@ -93,7 +93,7 @@ resource "aws_lb_target_group" "microservice_3_target_group" {
     health_check {
         enabled             = true
         interval            = 30
-        path                = "/"
+        path                = "/health"
         protocol            = "HTTP"
         timeout             = 5
         healthy_threshold   = 2
@@ -120,7 +120,7 @@ resource "aws_lb_target_group" "microservice_4_target_group" {
     health_check {
         enabled             = true
         interval            = 30
-        path                = "/"
+        path                = "/health"
         protocol            = "HTTP"
         timeout             = 5
         healthy_threshold   = 2

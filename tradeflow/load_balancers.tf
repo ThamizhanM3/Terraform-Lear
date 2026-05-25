@@ -89,7 +89,7 @@ resource "aws_lb_listener_rule" "microservice_1_rule" {
 
     condition {
         path_pattern {
-            values = ["/api/ms1/*"]
+            values = ["/api/users/*"]
         }
     }
 }
@@ -109,7 +109,7 @@ resource "aws_lb_listener_rule" "microservice_2_rule" {
 
     condition {
         path_pattern {
-            values = ["/api/ms2/*"]
+            values = ["/api/stocks/*"]
         }
     }
 }
@@ -129,7 +129,7 @@ resource "aws_lb_listener_rule" "microservice_3_rule" {
 
     condition {
         path_pattern {
-            values = ["/api/ms3/*"]
+            values = ["/api/trades/*"]
         }
     }
 }
@@ -149,7 +149,7 @@ resource "aws_lb_listener_rule" "microservice_4_rule" {
 
     condition {
         path_pattern {
-            values = ["/api/ms4/*"]
+            values = ["/api/portfolio/*"]
         }
     }
 }
