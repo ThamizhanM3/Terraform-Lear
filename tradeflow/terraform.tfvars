@@ -22,9 +22,9 @@ key_name = "M3"
 
 desired_capacity = 2
 min_size = 1
-max_size = 3
+max_size = 2
 
-frontend_docker_image = "thamizhanm3/tradefloe-frontend:latest"
+frontend_docker_image = "thamizhanm3/tradeflow-frontend:latest"
 microservice_1_image = "thamizhanm3/tradeflow-user:latest"
 microservice_2_image = "thamizhanm3/tradeflow-stock:latest"
 microservice_3_image = "thamizhanm3/tradeflow-trading:latest"

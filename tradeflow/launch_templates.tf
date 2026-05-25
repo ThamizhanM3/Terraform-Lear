@@ -56,12 +56,16 @@ resource "aws_launch_template" "backend_1_launch_template" {
                 docker run -d \
                   --name microservice-1 \
                   --restart unless-stopped \
+                  -e PORT=${var.microservice_1_port} \
+                  -e MONGODB_URI=mongodb://${aws_instance.tradeflow_database_instance.private_ip}:${var.mongodb_port} \
                   -p ${var.microservice_1_port}:${var.microservice_1_port} \
                   ${var.microservice_1_image}
 
                 docker run -d \
                   --name microservice-2 \
                   --restart unless-stopped \
+                  -e PORT=${var.microservice_2_port} \
+                  -e MONGODB_URI=mongodb://${aws_instance.tradeflow_database_instance.private_ip}:${var.mongodb_port} \
                   -p ${var.microservice_2_port}:${var.microservice_2_port} \
                   ${var.microservice_2_image}
                 EOF
@@ -98,12 +102,16 @@ resource "aws_launch_template" "backend_2_launch_template" {
                 docker run -d \
                   --name microservice-3 \
                   --restart unless-stopped \
+                  -e PORT=${var.microservice_3_port} \
+                  -e MONGODB_URI=mongodb://${aws_instance.tradeflow_database_instance.private_ip}:${var.mongodb_port} \
                   -p ${var.microservice_3_port}:${var.microservice_3_port} \
                   ${var.microservice_3_image}
 
                 docker run -d \
                   --name microservice-4 \
                   --restart unless-stopped \
+                  -e PORT=${var.microservice_4_port} \
+                  -e MONGODB_URI=mongodb://${aws_instance.tradeflow_database_instance.private_ip}:${var.mongodb_port} \
                   -p ${var.microservice_4_port}:${var.microservice_4_port} \
                   ${var.microservice_4_image}
                 EOF
