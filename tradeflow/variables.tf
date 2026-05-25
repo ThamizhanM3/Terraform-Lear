@@ -94,6 +94,10 @@ variable "microservice_4_image" {
     type = string
 }
 
+variable "mongodb_image" {
+    type = string
+}
+
 variable "frontend_port" {
     type = number
 }
