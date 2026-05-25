@@ -20,7 +20,7 @@ instance_type = "t2.micro"
 ami_id = "ami-07a00cf47dbbc844c"
 key_name = "M3"
 
-desired_capacity = 2
+desired_capacity = 1
 min_size = 1
 max_size = 2
 

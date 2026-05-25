@@ -25,10 +25,10 @@ resource "aws_launch_template" "frontend_launch_template" {
                   --name tradeflow-frontend \
                   --restart unless-stopped \
                   -p 3000:80 \
-                  -e VITE_USERS_API="/api/users" \
-                  -e VITE_STOCKS_API="/api/stocks" \
-                  -e VITE_TRADES_API="/api/trades" \
-                  -e VITE_PORTFOLIO_API="/api/portfolio" \
+                  -e VITE_USERS_API="/api" \
+                  -e VITE_STOCKS_API="/api" \
+                  -e VITE_TRADES_API="/api" \
+                  -e VITE_PORTFOLIO_API="/api" \
                   ${var.frontend_docker_image}
 
                 cat > /etc/nginx/sites-available/default <<'NGINXCONF'
