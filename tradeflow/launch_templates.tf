@@ -186,8 +186,8 @@ resource "aws_launch_template" "backend_2_launch_template" {
                   --restart unless-stopped \
                   -e PORT=${var.microservice_3_port} \
                   -e MONGODB_URI=mongodb://${aws_instance.tradeflow_database_instance.private_ip}:${var.mongodb_port}/tradeflow \
-                  -e USER_SERVICE_URL="/api" \
-                  -e PORTFOLIO_SERVICE_URL="/api" \
+                  -e USER_SERVICE_URL=http"//${aws_lb.backend_alb.dns_name}/api/users \
+                  -e PORTFOLIO_SERVICE_URL=http"//${aws_lb.backend_alb.dns_name}/api/portfolio \
                   -p ${var.microservice_3_port}:${var.microservice_3_port} \
                   ${var.microservice_3_image}
 
