@@ -94,6 +94,14 @@ resource "aws_security_group" "backend_alb_sg" {
         security_groups = [aws_security_group.frontend_sg.id]
     }
 
+    ingress {
+        description     = "HTTP from Frontend Instances"
+        from_port       = 80
+        to_port         = 80
+        protocol        = "tcp"
+        security_groups = [aws_security_group.backend_sg.id]
+    }
+
     egress {
         from_port   = 0
         to_port     = 0
