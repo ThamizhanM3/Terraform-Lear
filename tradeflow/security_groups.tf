@@ -196,7 +196,7 @@ resource "aws_security_group" "database_sg" {
     }
 }
 
-resource "aws_security_group_rule" "backend_to_backend_aln" {
+resource "aws_security_group_rule" "backend_to_backend_alb" {
     type = "ingress"
     from_port = 80
     to_port = 80
