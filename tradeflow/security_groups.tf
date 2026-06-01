@@ -195,12 +195,3 @@ resource "aws_security_group" "database_sg" {
         Name = "${var.project_name}-Database-SG"
     }
 }
-
-resource "aws_security_group_rule" "backend_to_backend_alb" {
-    type = "ingress"
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
-    source_security_group_id = aws_security_group.backend_alb_sg.id
-    security_group_id = aws_security_group.backend_sg.id
-}
