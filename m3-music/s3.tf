@@ -1,23 +1,31 @@
-resource "aws_s3_bucket" "s3_bucket" {
-    bucket = "${var.project_name}-bucket"
+resource "aws_s3_bucket" "songs_bucket" {
+    bucket = var.songs_bucket_name
 
     tags = {
-        Name = "${var.project_name}-Bucket"
+        Name = "${var.project_name}-songs"
     }
 }
 
+resource "aws_s3_bucket_versioning" "songs_versioning" {
+    bucket = aws_s3_bucket.songs_bucket.id
 
-resource "aws_s3_bucket_ownership_controls" "ownership" {
-    bucket = aws_s3_bucket.s3_bucket.id
+    versioning_configuration {
+        status = "Enabled"
+    }
+}
+
+resource "aws_s3_bucket_server_side_encryption_configuration" "songs_encryption" {
+    bucket = aws_s3_bucket.songs_bucket.id
 
     rule {
-        object_ownership = "BucketOwnerEnforced"
+        apply_server_side_encryption_by_default {
+        sse_algorithm = "AES256"
+        }
     }
 }
 
-
-resource "aws_s3_bucket_public_access_block" "block_public" {
-    bucket = aws_s3_bucket.s3_bucket.id
+resource "aws_s3_bucket_public_access_block" "songs_public_block" {
+    bucket = aws_s3_bucket.songs_bucket.id
 
     block_public_acls       = true
     block_public_policy     = true
@@ -25,22 +33,31 @@ resource "aws_s3_bucket_public_access_block" "block_public" {
     restrict_public_buckets = true
 }
 
+resource "aws_s3_bucket_policy" "songs_policy" {
+    bucket = aws_s3_bucket.songs_bucket.id
 
-resource "aws_s3_bucket_versioning" "versioning" {
-    bucket = aws_s3_bucket.s3_bucket.id
+    policy = jsonencode({
+        Version = "2012-10-17"
 
-    versioning_configuration {
-        status = "Enabled"
-    }
-}
+        Statement = [
+        {
+            Sid    = "AllowCloudFrontAccess"
+            Effect = "Allow"
 
+            Principal = {
+            Service = "cloudfront.amazonaws.com"
+            }
 
-resource "aws_s3_bucket_server_side_encryption_configuration" "encryption" {
-    bucket = aws_s3_bucket.s3_bucket.id
+            Action = "s3:GetObject"
 
-    rule {
-        apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
+            Resource = "${aws_s3_bucket.songs_bucket.arn}/*"
+
+            Condition = {
+            StringEquals = {
+                "AWS:SourceArn" = aws_cloudfront_distribution.songs_cdn.arn
+            }
+            }
         }
-    }
+        ]
+    })
 }

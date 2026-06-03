@@ -53,3 +53,13 @@ resource "aws_route_table_association" "backend_subnet_b_association" {
     subnet_id      = aws_subnet.backend_subnet_b.id
     route_table_id = aws_route_table.private_route_table.id
 }
+
+resource "aws_route_table_association" "database_subnet_a_association" {
+    subnet_id      = aws_subnet.database_subnet_a.id
+    route_table_id = aws_route_table.private_route_table.id
+}
+
+resource "aws_route_table_association" "database_subnet_b_association" {
+    subnet_id      = aws_subnet.database_subnet_b.id
+    route_table_id = aws_route_table.private_route_table.id
+}

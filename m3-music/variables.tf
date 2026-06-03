@@ -63,15 +63,15 @@ variable "key_name" {
 }
 
 variable "frontend_port" {
-    type = string
+    type = number
 }
 
 variable "backend_port" {
-    type = string
+    type = number
 }
 
 variable "database_port" {
-    type = string
+    type = number
 }
 
 variable "backend_image" {
@@ -80,4 +80,24 @@ variable "backend_image" {
 
 variable "frontend_image" {
     type = string
+}
+
+variable "desired_capacity" {
+    type = number
+}
+
+variable "min_size" {
+    type = number
+}
+
+variable "max_size" {
+    type = number
+}
+
+variable "songs_bucket_name" {
+    type = string
+}
+
+variable "jwt_secret" {
+    sensitive = true
 }

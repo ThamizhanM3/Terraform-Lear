@@ -82,6 +82,31 @@ resource "aws_security_group" "frontend_sg" {
     }
 }
 
+resource "aws_security_group" "backend_alb_sg" {
+    name        = "${var.project_name}-Backend-ALB-SG"
+    description = "Security group for Internal Backend ALB"
+    vpc_id      = aws_vpc.main.id
+
+    ingress {
+        description     = "HTTP from Frontend Instances"
+        from_port       = 80
+        to_port         = 80
+        protocol        = "tcp"
+        security_groups = [aws_security_group.frontend_sg.id]
+    }
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name = "${var.project_name}-Backend-ALB-SG"
+    }
+}
+
 resource "aws_security_group" "backend_sg" {
     name        = "${var.project_name}-Backend-SG"
     description = "Security group for Backend Instances"
@@ -96,11 +121,11 @@ resource "aws_security_group" "backend_sg" {
     }
 
     ingress {
-        description     = "Microservice 4 from Backend ALB"
+        description     = "HTTP from Backend ALB"
         from_port       = var.backend_port
         to_port         = var.backend_port
         protocol        = "tcp"
-        security_groups = [aws_security_group.frontend_sg.id]
+        security_groups = [aws_security_group.backend_alb_sg.id]
     }
 
     egress {
