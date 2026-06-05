@@ -99,5 +99,6 @@ variable "songs_bucket_name" {
 }
 
 variable "jwt_secret" {
+    type = string
     sensitive = true
 }

@@ -2,8 +2,8 @@ resource "aws_instance" "database_instance" {
     ami = var.ami_id
     instance_type = var.instance_type
     subnet_id = aws_subnet.database_subnet_a.id
-    security_groups = [ aws_security_group.database_sg.id ]
-    key_name = "M3"
+    vpc_security_group_ids = [ aws_security_group.database_sg.id ]
+    key_name = var.key_name
 
     depends_on = [
         aws_nat_gateway.nat_gateway

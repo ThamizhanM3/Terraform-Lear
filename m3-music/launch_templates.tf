@@ -98,7 +98,7 @@ resource "aws_launch_template" "backend_launch_template" {
                 systemctl enable docker
                 JWT_SECRET=$(aws secretsmanager get-secret-value \
                     --secret-id ${aws_secretsmanager_secret.jwt_secret.name} \
-                    --region ap-south-1 \
+                    --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .JWT_SECRET)
 
