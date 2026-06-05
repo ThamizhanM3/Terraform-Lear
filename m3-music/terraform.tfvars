@@ -24,5 +24,13 @@ frontend_port = 80
 backend_port = 5000
 database_port = 27017
 
-frontend_image = ""
-backend_image = ""
+frontend_image = "115717304992.dkr.ecr.ap-south-1.amazonaws.com/m3music-frontend:v1"
+backend_image = "115717304992.dkr.ecr.ap-south-1.amazonaws.com/m3music-backend:v1"
+
+desired_capacity = 1
+min_size = 1
+max_size = 2
+
+songs_bucket_name = "m3-music"
+
+jwt_secret = "jwt_secret"

@@ -15,13 +15,21 @@ resource "aws_launch_template" "frontend_launch_template" {
                 #!/bin/bash
 
                 apt update -y
-                apt install -y docker.io nginx
+                apt install -y docker.io nginx awscli
 
                 systemctl start docker
                 systemctl enable docker
 
                 systemctl start nginx
                 systemctl enable nginx
+
+                aws ecr get-login-password --region ${var.aws_region} | \
+                docker login \
+                    --username AWS \
+                    --password-stdin \
+                    115717304992.dkr.ecr.ap-south-1.amazonaws.com
+
+                docker pull ${var.frontend_image}
 
                 docker run -d \
                     --name frontend \
@@ -101,6 +109,14 @@ resource "aws_launch_template" "backend_launch_template" {
                     --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .JWT_SECRET)
+
+                aws ecr get-login-password --region ${var.aws_region} | \
+                docker login \
+                    --username AWS \
+                    --password-stdin \
+                    115717304992.dkr.ecr.ap-south-1.amazonaws.com
+
+                docker pull ${var.backend_image}
 
                 docker run -d \
                     --name backend \

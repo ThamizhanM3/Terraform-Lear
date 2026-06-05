@@ -137,3 +137,44 @@ resource "aws_iam_role_policy_attachment" "backend_secrets_attachment" {
     role       = aws_iam_role.backend_role.name
     policy_arn = aws_iam_policy.secrets_manager_policy.arn
 }
+
+resource "aws_iam_policy" "ecr_pull_policy" {
+    name = "${var.project_name}-ecr-pull-policy"
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [
+        {
+            Effect = "Allow"
+
+            Action = [
+            "ecr:GetAuthorizationToken"
+            ]
+
+            Resource = "*"
+        },
+        {
+            Effect = "Allow"
+
+            Action = [
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage"
+            ]
+
+            Resource = "*"
+        }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "backend_ecr_attachment" {
+    role       = aws_iam_role.backend_role.name
+    policy_arn = aws_iam_policy.ecr_pull_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "frontend_ecr_attachment" {
+    role       = aws_iam_role.frontend_role.name
+    policy_arn = aws_iam_policy.ecr_pull_policy.arn
+}
