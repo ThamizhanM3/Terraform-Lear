@@ -90,7 +90,7 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
                 Resource = "*",
                 Condition = {
                     StringEquals = {
-                    "AWS:SourceArn" = aws_cloudfront_distribution.songs_distribution.arn
+                    "AWS:SourceArn" = aws_cloudfront_distribution.songs_cdn.arn
                     }
                 }
             }
