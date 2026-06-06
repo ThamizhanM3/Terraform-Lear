@@ -43,24 +43,26 @@ resource "aws_s3_bucket_policy" "songs_policy" {
         Version = "2012-10-17"
 
         Statement = [
-        {
-            Sid    = "AllowCloudFrontAccess"
-            Effect = "Allow"
+            {
+                Sid    = "AlllowCloudFrontServicePrincipalReadOnly"
+                Effect = "Allow"
 
-            Principal = {
-            Service = "cloudfront.amazonaws.com"
+                Principal = {
+                    Service = "cloudfront.amazonaws.com"
+                }
+
+                Action = "s3:GetObject"
+
+                Resource = "${aws_s3_bucket.songs_bucket.arn}/*"
+
+                Condition = {
+                    StringEquals = {
+                        "AWS:SourceArn" = aws_cloudfront_distribution.songs_cdn.arn
+                        "AWS:SourceAccount" = data.aws_caller_identity.current.account_id
+                    }
+                }
             }
-
-            Action = "s3:GetObject"
-
-            Resource = "${aws_s3_bucket.songs_bucket.arn}/*"
-
-            Condition = {
-            StringEquals = {
-                "AWS:SourceArn" = aws_cloudfront_distribution.songs_cdn.arn
-            }
-            }
-        }
         ]
     })
+    depends_on = [aws_cloudfront_distribution.songs_cdn]
 }

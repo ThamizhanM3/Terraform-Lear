@@ -23,23 +23,23 @@ resource "aws_cloudfront_distribution" "songs_cdn" {
         viewer_protocol_policy = "redirect-to-https"
 
         allowed_methods = [
-        "GET",
-        "HEAD"
+            "GET",
+            "HEAD"
         ]
 
         cached_methods = [
-        "GET",
-        "HEAD"
+            "GET",
+            "HEAD"
         ]
 
         compress = true
 
         forwarded_values {
-        query_string = false
+            query_string = false
 
-        cookies {
-            forward = "none"
-        }
+            cookies {
+                forward = "none"
+            }
         }
     }
 
