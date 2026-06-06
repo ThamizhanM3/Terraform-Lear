@@ -18,28 +18,14 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
         Version = "2012-10-17",
         Statement = [
             {
-                Sid = "EnableRootPermissions"
+                Sid = "EnableRootPermissions",
                 Effect = "Allow",
                 Principal = {
                     AWS = "arn:aws:iam::${data.aws_caller_identity.current.account_id}:root"
                 },
                 Action = "kms:*",
                 Resource = "*"
-            },
-            {
-                Sid = "AllowS3Usage",
-                Effect = "Allow",
-                Principal = {
-                    Service = "s3.amazonaws.com"
-                },
-                Action = [
-                    "kms:Encrypt",
-                    "kms:Decrypt",
-                    "kms:GenerateDataKey*",
-                    "kms:DescribeKey"
-                ],
-                Resource = "*"
-            },
+            }, 
             {
                 Sid = "AllowBackendRoleUsage",
                 Effect = "Allow",
@@ -53,6 +39,23 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
                     "kms:DescribeKey"
                 ],
                 Resource = "*"
+            },
+            {
+                Sid = "AllowS3ToUseKeyForS3Objects",
+                Effect = "Allow",
+                Principal = {
+                Service = "s3.amazonaws.com"
+                },
+                Action = [
+                "kms:Decrypt",
+                "kms:GenerateDataKey"
+                ],
+                Resource = "*",
+                Condition = {
+                StringEquals = {
+                    "aws:SourceArn" = aws_s3_bucket.songs_bucket.arn
+                }
+                }
             }
         ]
     })
