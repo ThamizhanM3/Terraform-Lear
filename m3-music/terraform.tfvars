@@ -29,7 +29,7 @@ backend_image = "115717304992.dkr.ecr.ap-south-1.amazonaws.com/m3music-backend:v
 
 desired_capacity = 1
 min_size = 1
-max_size = 2
+max_size = 1
 
 songs_bucket_name = "m3-music"
 

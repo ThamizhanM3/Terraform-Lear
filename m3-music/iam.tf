@@ -103,7 +103,7 @@ resource "aws_iam_policy" "secrets_manager_policy" {
             "secretsmanager:GetSecretValue"
         ]
 
-        Resource = aws_secretsmanager_secret.jwt_secret.arn
+        Resource = data.aws_secretsmanager_secret.jwt_secret.arn
         }]
     })
 }

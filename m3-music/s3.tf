@@ -1,6 +1,8 @@
 resource "aws_s3_bucket" "songs_bucket" {
     bucket = var.songs_bucket_name
 
+    force_destroy = true
+
     tags = {
         Name = "${var.project_name}-songs"
     }
@@ -19,7 +21,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "songs_encryption"
 
     rule {
         apply_server_side_encryption_by_default {
-        sse_algorithm = "AES256"
+            sse_algorithm     = "aws:kms"
+            kms_master_key_id = aws_kms_key.songs_kms.arn
         }
     }
 }
