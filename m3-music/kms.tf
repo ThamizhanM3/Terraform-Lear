@@ -39,6 +39,20 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
                     "kms:DescribeKey"
                 ],
                 Resource = "*"
+            },
+            {
+                Sid = "AllowBackendRoleUsage",
+                Effect = "Allow",
+                Principal = {
+                    AWS = aws_iam_role.backend_role.arn
+                },
+                Action = [
+                    "kms:GenerateDataKey",
+                    "kms:Encrypt",
+                    "kms:Decrypt",
+                    "kms:DescribeKey"
+                ],
+                Resource = "*"
             }
         ]
     })

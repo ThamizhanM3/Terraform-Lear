@@ -178,3 +178,31 @@ resource "aws_iam_role_policy_attachment" "frontend_ecr_attachment" {
     role       = aws_iam_role.frontend_role.name
     policy_arn = aws_iam_policy.ecr_pull_policy.arn
 }
+
+resource "aws_iam_policy" "kms_usage_policy" {
+    name = "${var.project_name}-kms-usage"
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [
+        {
+            Effect = "Allow"
+
+            Action = [
+                "kms:GenerateDataKey",
+                "kms:Encrypt",
+                "kms:Decrypt",
+                "kms:DescribeKey"
+            ]
+
+            Resource = aws_kms_key.songs_kms.arn
+        }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "backend_kms_attachment" {
+    role       = aws_iam_role.backend_role.name
+    policy_arn = aws_iam_policy.kms_usage_policy.arn
+}
