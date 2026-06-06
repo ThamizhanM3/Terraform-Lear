@@ -75,6 +75,24 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
                     "aws:SourceAccount" = data.aws_caller_identity.current.account_id
                     }
                 }
+            },
+            {
+                Sid = "AllowCloudFrontUseOfKMSKey",
+                Effect = "Allow",
+                Principal = {
+                    Service = "cloudfront.amazonaws.com"
+                },
+                Action = [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey",
+                    "kms:DescribeKey"
+                ],
+                Resource = "*",
+                Condition = {
+                    StringEquals = {
+                    "AWS:SourceArn" = aws_cloudfront_distribution.songs_distribution.arn
+                    }
+                }
             }
         ]
     })
