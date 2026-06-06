@@ -44,17 +44,36 @@ resource "aws_kms_key_policy" "songs_kms_policy" {
                 Sid = "AllowS3ToUseKeyForS3Objects",
                 Effect = "Allow",
                 Principal = {
-                Service = "s3.amazonaws.com"
+                    Service = "s3.amazonaws.com"
                 },
                 Action = [
-                "kms:Decrypt",
-                "kms:GenerateDataKey"
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey"
                 ],
                 Resource = "*",
                 Condition = {
-                StringEquals = {
-                    "aws:SourceArn" = aws_s3_bucket.songs_bucket.arn
+                    StringEquals = {
+                        "aws:SourceArn" = aws_s3_bucket.songs_bucket.arn
+                    }
                 }
+            },
+            {
+                Sid = "AllowS3UseOfKeyViaCloudFront",
+                Effect = "Allow",
+                Principal = {
+                    Service = "s3.amazonaws.com"
+                },
+                Action = [
+                    "kms:Decrypt",
+                    "kms:GenerateDataKey",
+                    "kms:DescribeKey"
+                ],
+                Resource = "*",
+                Condition = {
+                    StringEquals = {
+                    "aws:SourceArn" = aws_s3_bucket.songs_bucket.arn,
+                    "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+                    }
                 }
             }
         ]

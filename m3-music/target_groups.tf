@@ -31,7 +31,7 @@ resource "aws_lb_target_group" "backend_target_group" {
     health_check {
         enabled             = true
         interval            = 30
-        path                = "/"
+        path                = "/health"
         protocol            = "HTTP"
         timeout             = 5
         healthy_threshold   = 2
