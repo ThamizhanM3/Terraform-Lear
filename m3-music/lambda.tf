@@ -15,7 +15,11 @@ resource "aws_lambda_function" "upload_logger" {
 
     environment {
         variables = {
-            DYNAMODB_TABLE = aws_dynamodb_table.upload_events.name
+            MONGO_SECRET_NAME = aws_secretsmanager_secret.mongo_credentials.name
+            DATABASE_IP       = aws_instance.database_instance.private_ip
+            DATABASE_PORT     = var.database_port
+            MONGO_DB_NAME     = "m3-music"
+            DYNAMODB_TABLE    = aws_dynamodb_table.upload_events.name
         }
     }
 }
