@@ -380,3 +380,67 @@ resource "aws_iam_role_policy_attachment" "report_lambda_attachment" {
     role       = aws_iam_role.lambda_role.name
     policy_arn = aws_iam_policy.report_lambda_policy.arn
 }
+
+# resource "aws_iam_role_policy_attachment" "backend_ssm" {
+#     role       = aws_iam_role.backend_role.name
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
+
+# resource "aws_iam_role_policy_attachment" "frontend_ssm" {
+#     role       = aws_iam_role.frontend_role.name
+#     policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+# }
+
+resource "aws_iam_policy" "ssm_core_custom" {
+    name = "${var.project_name}-ssm-core-policy"
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Effect = "Allow"
+                Action = [
+                    "ssm:UpdateInstanceInformation"
+                ]
+                Resource = "*"
+            },
+            {
+                Effect = "Allow"
+                Action = [
+                    "ssmmessages:CreateControlChannel",
+                    "ssmmessages:CreateDataChannel",
+                    "ssmmessages:OpenControlChannel",
+                    "ssmmessages:OpenDataChannel"
+                ]
+                Resource = "*"
+            },
+            {
+                Effect = "Allow"
+                Action = [
+                    "ec2messages:AcknowledgeMessage",
+                    "ec2messages:DeleteMessage",
+                    "ec2messages:FailMessage",
+                    "ec2messages:GetEndpoint",
+                    "ec2messages:GetMessages",
+                    "ec2messages:SendReply"
+                ]
+                Resource = "*"
+            }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "frontend_ssm_custom" {
+    role       = aws_iam_role.frontend_role.name
+    policy_arn = aws_iam_policy.ssm_core_custom.arn
+}
+
+resource "aws_iam_role_policy_attachment" "backend_ssm_custom" {
+    role       = aws_iam_role.backend_role.name
+    policy_arn = aws_iam_policy.ssm_core_custom.arn
+}
+
+resource "aws_iam_role_policy_attachment" "database_ssm_custom" {
+    role       = aws_iam_role.database_role.name
+    policy_arn = aws_iam_policy.ssm_core_custom.arn
+}
+
