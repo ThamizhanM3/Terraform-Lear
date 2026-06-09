@@ -66,3 +66,21 @@ resource "aws_s3_bucket_policy" "songs_policy" {
     })
     depends_on = [aws_cloudfront_distribution.songs_cdn]
 }
+
+
+resource "aws_s3_bucket" "terraform_state" {
+    bucket = "my-terraform-state-bucket-12345"
+
+    lifecycle {
+        prevent_destroy = true
+    }
+}
+
+
+resource "aws_s3_bucket_versioning" "versioning" {
+    bucket = aws_s3_bucket.terraform_state.id
+
+    versioning_configuration {
+        status = "Enabled"
+    }
+}
