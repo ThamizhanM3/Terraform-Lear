@@ -289,7 +289,10 @@ resource "aws_iam_policy" "lambda_custom_policy" {
                     "secretsmanager:GetSecretValue"
                 ]
 
-                Resource = data.aws_secretsmanager_secret.mongodb_credentials.arn
+                Resource = [
+                    data.aws_secretsmanager_secret.mongodb_credentials.arn,
+                    data.aws_secretsmanager_secret.jwt_secret.arn
+                ] 
             }
         ]
     })
