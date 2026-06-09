@@ -457,4 +457,3 @@ resource "aws_iam_role_policy_attachment" "database_ssm_custom" {
     role       = aws_iam_role.database_role.name
     policy_arn = aws_iam_policy.ssm_core_custom.arn
 }
-
