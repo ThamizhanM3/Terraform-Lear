@@ -96,18 +96,21 @@ resource "aws_iam_policy" "secrets_manager_policy" {
     policy = jsonencode({
         Version = "2012-10-17"
 
-        Statement = [{
-        Effect = "Allow"
+        Statement = [
+            {
+                Effect = "Allow"
 
-        Action = [
-            "secretsmanager:GetSecretValue"
-        ]
+                Action = [
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret"
+                ]
 
-        Resource = [
-            data.aws_secretsmanager_secret.jwt_secret.arn,
-            data.aws_secretsmanager_secret.mongodb_credentials.arn
+                Resource = [
+                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
+                    "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+                ]
+            }
         ]
-        }]
     })
 }
 
@@ -281,19 +284,20 @@ resource "aws_iam_policy" "lambda_custom_policy" {
 
                 Resource = aws_sns_topic.hourly_upload_report.arn
             },
-
             {
                 Effect = "Allow"
 
                 Action = [
-                    "secretsmanager:GetSecretValue"
+                    "secretsmanager:GetSecretValue",
+                    "secretsmanager:DescribeSecret"
                 ]
 
                 Resource = [
-                    data.aws_secretsmanager_secret.mongodb_credentials.arn,
-                    data.aws_secretsmanager_secret.jwt_secret.arn
-                ] 
+                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
+                    "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+                ]
             }
+
         ]
     })
 }
@@ -331,10 +335,14 @@ resource "aws_iam_policy" "database_secrets_policy" {
             Effect = "Allow"
 
             Action = [
-                "secretsmanager:GetSecretValue"
+                "secretsmanager:GetSecretValue",
+                "secretsmanager:DescribeSecret"
             ]
 
-            Resource = data.aws_secretsmanager_secret.mongodb_credentials.arn
+            Resource = [
+                "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
+                "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+            ]
         }]
     })
 }
