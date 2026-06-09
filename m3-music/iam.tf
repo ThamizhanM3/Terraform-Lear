@@ -103,7 +103,10 @@ resource "aws_iam_policy" "secrets_manager_policy" {
             "secretsmanager:GetSecretValue"
         ]
 
-        Resource = data.aws_secretsmanager_secret.jwt_secret.arn
+        Resource = [
+            data.aws_secretsmanager_secret.jwt_secret.arn,
+            data.aws_secretsmanager_secret.mongodb_credentials.arn
+        ]
         }]
     })
 }
@@ -328,7 +331,7 @@ resource "aws_iam_policy" "database_secrets_policy" {
                 "secretsmanager:GetSecretValue"
             ]
 
-            Resource = data.aws_secretsmanager_secret.mongodb_secret.arn
+            Resource = data.aws_secretsmanager_secret.mongodb_credentials.arn
         }]
     })
 }
@@ -356,8 +359,13 @@ resource "aws_iam_policy" "report_lambda_policy" {
             {
                 Effect = "Allow"
                 Action = [ "sns:Publish" ]
-                Resource = aws_sns_topic.upload_reports.arn
+                Resource = aws_sns_topic.hourly_upload_report.arn
             }
         ]
     })
+}
+
+resource "aws_iam_role_policy_attachment" "report_lambda_attachment" {
+    role       = aws_iam_role.lambda_role.name
+    policy_arn = aws_iam_policy.report_lambda_policy.arn
 }

@@ -20,13 +20,13 @@ resource "aws_instance" "database_instance" {
                 systemctl enable docker
 
                 MONGO_USERNAME=$(aws secretsmanager get-secret-value \
-                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_credentials.name} \
                     --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .MONGO_USERNAME)
 
                 MONGO_PASSWORD=$(aws secretsmanager get-secret-value \
-                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_credentials.name} \
                     --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .MONGO_PASSWORD)

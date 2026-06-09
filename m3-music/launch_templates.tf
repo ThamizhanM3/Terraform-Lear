@@ -36,7 +36,7 @@ resource "aws_launch_template" "frontend_launch_template" {
                     --restart unless-stopped \
                     --log-driver=awslogs \
                     --log-opt awslogs-region=${var.aws_region} \
-                    --log-opt awslogs-group=/m3-music/frontend \
+                    --log-opt awslogs-group=/${var.project_name}/frontend \
                     --log-opt awslogs-stream=frontend \
                     -p 3000:${var.frontend_port} \
                     -e VITE_API_URL="/api" \
@@ -111,13 +111,13 @@ resource "aws_launch_template" "backend_launch_template" {
                     --output text | jq -r .JWT_SECRET)
 
                 MONGO_USERNAME=$(aws secretsmanager get-secret-value \
-                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_credentials.name} \
                     --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .MONGO_USERNAME)
 
                 MONGO_PASSWORD=$(aws secretsmanager get-secret-value \
-                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_credentials.name} \
                     --region ${var.aws_region} \
                     --query SecretString \
                     --output text | jq -r .MONGO_PASSWORD)
@@ -135,7 +135,7 @@ resource "aws_launch_template" "backend_launch_template" {
                     --restart unless-stopped \
                     --log-driver=awslogs \
                     --log-opt awslogs-region=${var.aws_region} \
-                    --log-opt awslogs-group=/m3-music/backend \
+                    --log-opt awslogs-group=/${var.project_name}/backend \
                     --log-opt awslogs-stream=backend \
                     -e PORT=${var.backend_port} \
                     -e MONGODB_URI=mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@${aws_instance.database_instance.private_ip}:${var.database_port}/m3-music?authSource=admin \
