@@ -68,19 +68,19 @@ resource "aws_s3_bucket_policy" "songs_policy" {
 }
 
 
-resource "aws_s3_bucket" "terraform_state" {
-    bucket = "my-terraform-state-bucket-12345"
+# resource "aws_s3_bucket" "terraform_state" {
+#     bucket = "my-terraform-state-bucket-12345"
 
-    lifecycle {
-        prevent_destroy = true
-    }
-}
+#     lifecycle {
+#         prevent_destroy = true
+#     }
+# }
 
 
-resource "aws_s3_bucket_versioning" "versioning" {
-    bucket = aws_s3_bucket.terraform_state.id
+# resource "aws_s3_bucket_versioning" "versioning" {
+#     bucket = aws_s3_bucket.terraform_state.id
 
-    versioning_configuration {
-        status = "Enabled"
-    }
-}
+#     versioning_configuration {
+#         status = "Enabled"
+#     }
+# }
