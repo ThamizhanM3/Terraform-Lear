@@ -399,8 +399,22 @@ resource "aws_iam_policy" "ssm_core_custom" {
             {
                 Effect = "Allow"
                 Action = [
+                    "ssm:DescribeAssociation",
+                    "ssm:GetDeployablePatchSnapshotForInstance",
+                    "ssm:GetDocument",
+                    "ssm:DescribeDocument",
+                    "ssm:GetManifest",
+                    "ssm:GetParameter",
+                    "ssm:GetParameters",
+                    "ssm:ListAssociations",
+                    "ssm:ListInstanceAssociations",
+                    "ssm:PutInventory",
+                    "ssm:PutComplianceItems",
+                    "ssm:PutConfigurePackageResult",
+                    "ssm:UpdateAssociationStatus",
+                    "ssm:UpdateInstanceAssociationStatus",
                     "ssm:UpdateInstanceInformation"
-                ]
+                ],
                 Resource = "*"
             },
             {
@@ -410,7 +424,7 @@ resource "aws_iam_policy" "ssm_core_custom" {
                     "ssmmessages:CreateDataChannel",
                     "ssmmessages:OpenControlChannel",
                     "ssmmessages:OpenDataChannel"
-                ]
+                ],
                 Resource = "*"
             },
             {
@@ -422,7 +436,7 @@ resource "aws_iam_policy" "ssm_core_custom" {
                     "ec2messages:GetEndpoint",
                     "ec2messages:GetMessages",
                     "ec2messages:SendReply"
-                ]
+                ],
                 Resource = "*"
             }
         ]
