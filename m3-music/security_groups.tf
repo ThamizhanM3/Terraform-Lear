@@ -161,6 +161,16 @@ resource "aws_security_group" "database_sg" {
         security_groups = [aws_security_group.bastionhost_sg.id]
     }
 
+    ingress {
+        description     = "MongoDB from Lambda"
+        from_port       = var.database_port
+        to_port         = var.database_port
+        protocol        = "tcp"
+        security_groups = [
+            aws_security_group.lambda_sg.id
+        ]
+    }
+
     egress {
         from_port   = 0
         to_port     = 0
@@ -172,3 +182,21 @@ resource "aws_security_group" "database_sg" {
         Name = "${var.project_name}-Database-SG"
     }
 }
+
+resource "aws_security_group" "lambda_sg" {
+    name        = "${var.project_name}-Lambda-SG"
+    description = "Lambda security group"
+    vpc_id      = aws_vpc.main.id
+
+    egress {
+        from_port   = 0
+        to_port     = 0
+        protocol    = "-1"
+        cidr_blocks = ["0.0.0.0/0"]
+    }
+
+    tags = {
+        Name = "${var.project_name}-Lambda-SG"
+    }
+}
+

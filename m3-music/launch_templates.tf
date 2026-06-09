@@ -110,6 +110,18 @@ resource "aws_launch_template" "backend_launch_template" {
                     --query SecretString \
                     --output text | jq -r .JWT_SECRET)
 
+                MONGO_USERNAME=$(aws secretsmanager get-secret-value \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --region ${var.aws_region} \
+                    --query SecretString \
+                    --output text | jq -r .MONGO_USERNAME)
+
+                MONGO_PASSWORD=$(aws secretsmanager get-secret-value \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --region ${var.aws_region} \
+                    --query SecretString \
+                    --output text | jq -r .MONGO_PASSWORD)
+
                 aws ecr get-login-password --region ${var.aws_region} | \
                 docker login \
                     --username AWS \
@@ -126,7 +138,7 @@ resource "aws_launch_template" "backend_launch_template" {
                     --log-opt awslogs-group=/m3-music/backend \
                     --log-opt awslogs-stream=backend \
                     -e PORT=${var.backend_port} \
-                    -e MONGODB_URI=mongodb://${aws_instance.database_instance.private_ip}:${var.database_port}/m3-music \
+                    -e MONGODB_URI=mongodb://$MONGO_USERNAME:$MONGO_PASSWORD@${aws_instance.database_instance.private_ip}:${var.database_port}/m3-music?authSource=admin \
                     -e JWT_SECRET=$JWT_SECRET \
                     -e AWS_REGION=${var.aws_region} \
                     -e S3_BUCKET_NAME=${var.songs_bucket_name} \

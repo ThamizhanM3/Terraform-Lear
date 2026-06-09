@@ -34,3 +34,8 @@ max_size = 1
 songs_bucket_name = "m3-music"
 
 jwt_secret = "jwt_secret"
+
+admin_email = "mithelesh.tmz.m3@gmail.com"
+
+upload_lambda_image = "115717304992.dkr.ecr.ap-south-1.amazonaws.com/upload-processor:v1"
+report_lambda_image = "115717304992.dkr.ecr.ap-south-1.amazonaws.com/report-processor:v1"

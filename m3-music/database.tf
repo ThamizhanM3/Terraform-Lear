@@ -1,9 +1,10 @@
 resource "aws_instance" "database_instance" {
-    ami = var.ami_id
-    instance_type = var.instance_type
-    subnet_id = aws_subnet.database_subnet_a.id
-    vpc_security_group_ids = [ aws_security_group.database_sg.id ]
-    key_name = var.key_name
+    ami                    = var.ami_id
+    instance_type          = var.instance_type
+    subnet_id              = aws_subnet.database_subnet_a.id
+    vpc_security_group_ids = [aws_security_group.database_sg.id]
+    key_name               = var.key_name
+    iam_instance_profile = aws_iam_instance_profile.database_profile.name
 
     depends_on = [
         aws_nat_gateway.nat_gateway
@@ -13,18 +14,52 @@ resource "aws_instance" "database_instance" {
                 #!/bin/bash
 
                 apt update -y
-                apt install -y docker.io
+                apt install -y docker.io awscli jq
 
                 systemctl start docker
                 systemctl enable docker
 
+                MONGO_USERNAME=$(aws secretsmanager get-secret-value \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --region ${var.aws_region} \
+                    --query SecretString \
+                    --output text | jq -r .MONGO_USERNAME)
+
+                MONGO_PASSWORD=$(aws secretsmanager get-secret-value \
+                    --secret-id ${data.aws_secretsmanager_secret.mongodb_secret.name} \
+                    --region ${var.aws_region} \
+                    --query SecretString \
+                    --output text | jq -r .MONGO_PASSWORD)
+
+                docker volume create mongodb_data
+
                 docker run -d \
                     --name mongodb \
                     --restart unless-stopped \
-                    -p 27017:27017 \
+                    -p ${var.database_port}:${var.database_port} \
+                    -v mongodb_data:/data/db \
+                    -e MONGO_INITDB_ROOT_USERNAME=$MONGO_USERNAME \
+                    -e MONGO_INITDB_ROOT_PASSWORD=$MONGO_PASSWORD \
                     mongo
                 EOF
+
     tags = {
         Name = "${var.project_name}-Database-Instance"
+    }
+}
+
+resource "aws_dynamodb_table" "upload_events" {
+    name         = "${var.project_name}-upload-events"
+    billing_mode = "PAY_PER_REQUEST"
+
+    hash_key = "uploadId"
+
+    attribute {
+        name = "uploadId"
+        type = "S"
+    }
+
+    tags = {
+        Name = "${var.project_name}-upload-events"
     }
 }

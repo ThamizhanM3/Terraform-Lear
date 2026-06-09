@@ -102,3 +102,15 @@ variable "jwt_secret" {
     type = string
     sensitive = true
 }
+
+variable "admin_email" {
+    type = string
+}
+
+variable "upload_lambda_image" {
+    type = string
+}
+
+variable "report_lambda_image" {
+    type = string
+}

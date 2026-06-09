@@ -206,3 +206,158 @@ resource "aws_iam_role_policy_attachment" "backend_kms_attachment" {
     role       = aws_iam_role.backend_role.name
     policy_arn = aws_iam_policy.kms_usage_policy.arn
 }
+
+resource "aws_iam_role" "lambda_role" {
+    name = "${var.project_name}-lambda-role"
+
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [{
+            Effect = "Allow"
+
+            Principal = {
+                Service = "lambda.amazonaws.com"
+            }
+
+            Action = "sts:AssumeRole"
+        }]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
+    role       = aws_iam_role.lambda_role.name
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
+    role       = aws_iam_role.lambda_role.name
+    policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
+
+resource "aws_iam_policy" "lambda_custom_policy" {
+
+    name = "${var.project_name}-lambda-custom"
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [
+
+            {
+                Effect = "Allow"
+
+                Action = [
+                    "dynamodb:PutItem",
+                    "dynamodb:GetItem",
+                    "dynamodb:Query",
+                    "dynamodb:Scan"
+                ]
+
+                Resource = aws_dynamodb_table.upload_events.arn
+            },
+
+            {
+                Effect = "Allow"
+
+                Action = [
+                    "sqs:ReceiveMessage",
+                    "sqs:DeleteMessage",
+                    "sqs:GetQueueAttributes"
+                ]
+
+                Resource = aws_sqs_queue.upload_events_queue.arn
+            },
+
+            {
+                Effect = "Allow"
+
+                Action = [
+                    "sns:Publish"
+                ]
+
+                Resource = aws_sns_topic.hourly_upload_report.arn
+            },
+
+            {
+                Effect = "Allow"
+
+                Action = [
+                    "secretsmanager:GetSecretValue"
+                ]
+
+                Resource = data.aws_secretsmanager_secret.mongodb_credentials.arn
+            }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_custom_attachment" {
+    role       = aws_iam_role.lambda_role.name
+    policy_arn = aws_iam_policy.lambda_custom_policy.arn
+}
+
+resource "aws_iam_role" "database_role" {
+    name = "${var.project_name}-database-role"
+
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [{
+            Effect = "Allow"
+
+            Principal = {
+                Service = "ec2.amazonaws.com"
+            }
+
+            Action = "sts:AssumeRole"
+        }]
+    })
+}
+
+resource "aws_iam_policy" "database_secrets_policy" {
+    name = "${var.project_name}-database-secrets"
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+
+        Statement = [{
+            Effect = "Allow"
+
+            Action = [
+                "secretsmanager:GetSecretValue"
+            ]
+
+            Resource = data.aws_secretsmanager_secret.mongodb_secret.arn
+        }]
+    })
+}
+
+resource "aws_iam_role_policy_attachment" "database_secret_attachment" {
+    role       = aws_iam_role.database_role.name
+    policy_arn = aws_iam_policy.database_secrets_policy.arn
+}
+
+resource "aws_iam_instance_profile" "database_profile" {
+    name = "${var.project_name}-database-profile"
+    role = aws_iam_role.database_role.name
+}
+
+resource "aws_iam_policy" "report_lambda_policy" {
+    name = "${var.project_name}-report-lambda-policy"
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Effect = "Allow"
+                Action = [ "dynamodb:Scan" ]
+                Resource = aws_dynamodb_table.upload_events.arn
+            },
+            {
+                Effect = "Allow"
+                Action = [ "sns:Publish" ]
+                Resource = aws_sns_topic.upload_reports.arn
+            }
+        ]
+    })
+}
