@@ -106,8 +106,8 @@ resource "aws_iam_policy" "secrets_manager_policy" {
                 ]
 
                 Resource = [
-                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
-                    "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}",
+                    "${data.aws_secretsmanager_secret.jwt_secret.arn}"
                 ]
             }
         ]
@@ -293,8 +293,8 @@ resource "aws_iam_policy" "lambda_custom_policy" {
                 ]
 
                 Resource = [
-                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
-                    "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+                    "${data.aws_secretsmanager_secret.mongodb_credentials.arn}",
+                    "${data.aws_secretsmanager_secret.jwt_secret.arn}"
                 ]
             }
 
@@ -340,8 +340,8 @@ resource "aws_iam_policy" "database_secrets_policy" {
             ]
 
             Resource = [
-                "${data.aws_secretsmanager_secret.mongodb_credentials.arn}*",
-                "${data.aws_secretsmanager_secret.jwt_secret.arn}*"
+                "${data.aws_secretsmanager_secret.mongodb_credentials.arn}",
+                "${data.aws_secretsmanager_secret.jwt_secret.arn}"
             ]
         }]
     })
