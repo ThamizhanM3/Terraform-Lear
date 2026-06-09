@@ -263,17 +263,17 @@ resource "aws_iam_policy" "lambda_custom_policy" {
                 Resource = aws_dynamodb_table.upload_events.arn
             },
 
-            {
-                Effect = "Allow"
+            # {
+            #     Effect = "Allow"
 
-                Action = [
-                    "sqs:ReceiveMessage",
-                    "sqs:DeleteMessage",
-                    "sqs:GetQueueAttributes"
-                ]
+            #     Action = [
+            #         "sqs:ReceiveMessage",
+            #         "sqs:DeleteMessage",
+            #         "sqs:GetQueueAttributes"
+            #     ]
 
-                Resource = aws_sqs_queue.upload_events_queue.arn
-            },
+            #     Resource = aws_sqs_queue.upload_events_queue.arn
+            # },
 
             {
                 Effect = "Allow"

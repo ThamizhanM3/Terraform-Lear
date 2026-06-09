@@ -14,9 +14,9 @@ output "database_private_ip" {
     value = aws_instance.database_instance.private_ip 
 }
 
-output "upload_queue_url" {
-    value = aws_sqs_queue.upload_events_queue.url
-}
+# output "upload_queue_url" {
+#     value = aws_sqs_queue.upload_events_queue.url
+# }
 
 output "upload_events_table" {
     value = aws_dynamodb_table.upload_events.name

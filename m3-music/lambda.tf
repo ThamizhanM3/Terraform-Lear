@@ -15,7 +15,7 @@ resource "aws_lambda_function" "upload_logger" {
 
     environment {
         variables = {
-            MONGO_SECRET_NAME = aws_secretsmanager_secret.mongo_credentials.name
+            MONGO_SECRET_NAME = data.aws_secretsmanager_secret.mongodb_credentials.name
             DATABASE_IP       = aws_instance.database_instance.private_ip
             DATABASE_PORT     = var.database_port
             MONGO_DB_NAME     = "m3-music"
@@ -51,8 +51,8 @@ resource "aws_lambda_function" "hourly_report" {
     }
 }
 
-resource "aws_lambda_event_source_mapping" "upload_events_mapping" {
-    event_source_arn = aws_sqs_queue.upload_events_queue.arn
-    function_name = aws_lambda_function.upload_logger.arn
-    batch_size = 10
-}
+# resource "aws_lambda_event_source_mapping" "upload_events_mapping" {
+#     event_source_arn = aws_sqs_queue.upload_events_queue.arn
+#     function_name = aws_lambda_function.upload_logger.arn
+#     batch_size = 10
+# }
